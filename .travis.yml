@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t forkerino/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run forkerino/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t forkerino/multi-client ./client
+  - docker build -t forkerino/multi-nginx ./nginx
+  - docker build -t forkerino/multi-server ./server
+  - docker build -t forkerino/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push forkerino/multi-client
+  - docker push forkerino/multi-nginx
+  - docker push forkerino/multi-server
+  - docker push forkerino/multi-worker
+
+
